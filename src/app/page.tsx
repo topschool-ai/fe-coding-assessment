@@ -1,103 +1,87 @@
-import Image from "next/image";
+'use client';
+import { useState, useEffect } from 'react';
+import TodoItem from './components/TodoItem';
+import AddTodoModal from './components/AddTodoModal';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import '@/lib/fontawesome';
+
+// Define Todo type for better type safety
+type Todo = {
+  id: number;
+  title: string;
+  completed?: boolean;
+};
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  // State to hold the list of todos
+  const [todos, setTodos] = useState<Todo[]>([]);
+  // State to control visibility of Add Todo modal
+  const [showModal, setShowModal] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Fetch all todos from the API
+  const fetchTodos = async () => {
+    const res = await fetch('/api/todos');
+    const data = await res.json();
+    setTodos(data);
+  };
+
+  // On component mount, load the todos
+  useEffect(() => {
+    fetchTodos();
+  }, []);
+
+  // Add a new todo by calling the API and updating state
+  const addTodo = async (title: string) => {
+    if (!title.trim()) return; // Prevent adding empty tasks
+
+    const res = await fetch('/api/todos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title }),
+    });
+
+    const created: Todo = await res.json();
+
+    // Append the newly created todo to the list and close modal
+    setTodos([...todos, created]);
+    setShowModal(false);
+  };
+
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="max-w-xl w-full p-6 relative flex flex-col justify-between h-[800px]">
+        {/* Header with icon and title */}
+        <h1 className="text-lg text-center mb-4 bg-purple-500 py-5 text-white rounded flex items-center">
+          <div>
+            <FontAwesomeIcon icon="list" className="ps-2" />
+          </div>
+          <div className="mx-auto">
+            To-Do List App
+          </div>
+        </h1>
+
+        {/* Scrollable todo list container */}
+        <div className="flex-1 overflow-y-auto space-y-2 py-5 px-2 md:px-8 mb-20 bg-white rounded shadow">
+          {todos.map((todo) => (
+            <TodoItem key={todo.id} todo={todo} refresh={fetchTodos} />
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {/* Fixed button at bottom center to open AddTodoModal */}
+        <div className="relative bottom-0 left-0 right-0 flex justify-center">
+          <button
+            className="bg-purple-500 text-white px-6 py-3 rounded-full shadow hover:bg-purple-600 transition"
+            onClick={() => setShowModal(true)}
+          >
+            + New Task
+          </button>
+        </div>
+      </div>
+
+      {/* Conditionally render the modal for adding todos */}
+      {showModal && (
+        <AddTodoModal onAdd={addTodo} onClose={() => setShowModal(false)} />
+      )}
+    </main>
   );
 }
