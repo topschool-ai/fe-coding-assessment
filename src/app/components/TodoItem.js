@@ -3,7 +3,7 @@ import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "@/lib/fontawesome";
 
-export default function TodoItem({ todo, refresh }) {
+export default function TodoItem({ todo, refresh}) {
   // State to manage whether the todo title is in editing mode
   const [isEditing, setIsEditing] = useState(false);
   // State to hold the current value of the editable title input
